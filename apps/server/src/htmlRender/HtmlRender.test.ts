@@ -378,6 +378,29 @@ describe("HtmlRender", () => {
     }).pipe(Effect.provide(layerTest)),
   );
 
+  it.effect(
+    "publishes built UI without starting a sizing browser when measurement is disabled",
+    () =>
+      Effect.gen(function* () {
+        const htmlRender = yield* HtmlRender.HtmlRender;
+        const mcpSessions = yield* McpProviderSessions.McpProviderSessions;
+        const threadId = ThreadId.make("thread-html-direct");
+        const page = {
+          html: '<!doctype html><figure><svg viewBox="0 0 10 10"><rect width="5" height="10"/></svg><figcaption>Report</figcaption></figure>',
+          title: "Report",
+          height: 200,
+        };
+        const reference = yield* htmlRender.publish({ threadId, ...page, measure: false });
+        expect(reference.height).toBe(200);
+        expect(reference.heights).toBeUndefined();
+        expect(yield* mcpSessions.takeHtmlRender(threadId, page)).toEqual(reference);
+      }).pipe(
+        Effect.provide(
+          layerHtmlRender(undefined, Effect.die(new Error("unexpected sizing browser"))),
+        ),
+      ),
+  );
+
   it.effect("removes the page when publishing is interrupted", () =>
     Effect.gen(function* () {
       const threadId = ThreadId.make("thread-html-cancel");

@@ -216,7 +216,6 @@ import { MarkdownCodeBlock, SuspenseShikiCodeBlock } from "./chat/MarkdownCodeBl
 import { createMarkdownRenderer } from "./chat/markdownRenderer";
 import { splitMarkdownBlocks } from "./chat/markdownStreamBlocks";
 import { MarkdownMermaidCodeBlock } from "./chat/MarkdownMermaidCodeBlock";
-import { MarkdownBarChart } from "./chat/MarkdownBarChart";
 import { MarkdownTable } from "./chat/MarkdownTable";
 import { MarkdownDetails } from "./chat/MarkdownDetails";
 import {
@@ -539,7 +538,6 @@ function resolveFileLinkSources(
 
 function useChatMarkdownState({
   text,
-  renderNoteStyles = false,
   inline = false,
   cwd,
   agentDirectories,
@@ -1047,7 +1045,6 @@ function useChatMarkdownState({
     inlineCodeFileLinkMetaByText,
     inline,
     mathEnabled,
-    renderNoteStyles,
     isStreaming,
     linkTargetPreference,
     markdownFileLinkMetaByHref,
@@ -1786,7 +1783,6 @@ const CHAT_MARKDOWN_COMPONENTS = {
       onRunShellCommand,
       inline,
       mathEnabled,
-      renderNoteStyles,
     } = use(ChatMarkdownRendererContext);
     const text = use(ChatMarkdownTextContext);
     const codeBlock = extractCodeBlock(children);
@@ -1795,13 +1791,6 @@ const CHAT_MARKDOWN_COMPONENTS = {
     }
 
     const language = extractFenceLanguage(codeBlock.className);
-    if (renderNoteStyles && !inline && language === "t3-chart") {
-      return isStreaming && !isClosedCodeFence(node, text, codeBlock.code) ? (
-        <pre {...props}>{children}</pre>
-      ) : (
-        <MarkdownBarChart source={codeBlock.code} />
-      );
-    }
     if (
       mathEnabled &&
       language === "math" &&
@@ -1958,7 +1947,7 @@ function ChatMarkdown({
   ...props
 }: ChatMarkdownProps) {
   const { componentState, handleCopy, markdownRef, localMediaPreview, closeLocalMediaPreview } =
-    useChatMarkdownState({ text, inline, renderNoteStyles, ...props });
+    useChatMarkdownState({ text, inline, ...props });
   const hasInsights = renderInsights && text.includes("★ Insight");
   // Streaming re-renders only the last block; offsets for task edits need the whole text.
   const streamingBlocks =

@@ -74,7 +74,13 @@ const handlers = {
       const htmlRender = yield* HtmlRender.HtmlRender;
       const source = yield* pageSource(input);
       const reference = yield* htmlRender
-        .publish({ ...source, threadId: thread.threadId, title: input.title, height: input.height })
+        .publish({
+          ...source,
+          threadId: thread.threadId,
+          title: input.title,
+          height: input.height,
+          measure: input.measure,
+        })
         .pipe(Effect.mapError(toFailure));
       return {
         htmlRender: reference,

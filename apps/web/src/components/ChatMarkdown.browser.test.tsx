@@ -399,41 +399,6 @@ describe("ChatMarkdown external link labels", () => {
   });
 });
 
-describe("ChatMarkdown native chart", () => {
-  const chart = ["```t3-chart", "Build time (seconds)", "Before | 20", "After | 8", "```"].join(
-    "\n",
-  );
-
-  it("renders labelled bars directly between chat paragraphs without a frame", async () => {
-    setup();
-    await using screen = await renderText(`Before the chart.\n\n${chart}\n\nAfter the chart.`, {
-      renderNoteStyles: true,
-    });
-    const figure = screen.container.querySelector("figure[data-chat-bar-chart]");
-    expect(figure?.previousElementSibling?.textContent).toBe("Before the chart.");
-    expect(figure?.nextElementSibling?.textContent).toBe("After the chart.");
-    expect(figure?.querySelector("figcaption")?.textContent).toBe("Build time (seconds)");
-    expect(figure?.querySelectorAll("dt")).toHaveLength(2);
-    expect(figure?.querySelectorAll("[style*=width]")[1]?.getAttribute("style")).toContain("40%");
-    expect(screen.container.querySelector("iframe")).toBeNull();
-  });
-
-  it("leaves invalid and unfinished streaming charts as code", async () => {
-    setup();
-    await using invalid = await renderText(chart.replace("After | 8", "After | nope"), {
-      renderNoteStyles: true,
-    });
-    await using streaming = await renderText(chart.slice(0, -3), {
-      renderNoteStyles: true,
-      isStreaming: true,
-    });
-    for (const { container } of [invalid, streaming]) {
-      expect(container.querySelector("figure[data-chat-bar-chart]")).toBeNull();
-      expect(container.querySelector("pre")?.textContent).toContain("Build time (seconds)");
-    }
-  });
-});
-
 describe("ChatMarkdown streaming", () => {
   it("runs only a complete single-line shell block after a click", async () => {
     setup();

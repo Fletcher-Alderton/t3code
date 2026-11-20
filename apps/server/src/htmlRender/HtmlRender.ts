@@ -152,6 +152,7 @@ export class HtmlRender extends Context.Service<
         readonly threadId: ThreadId;
         readonly title: string;
         readonly height: number;
+        readonly measure?: boolean | undefined;
       },
     ) => Effect.Effect<
       HtmlRenderReference,
@@ -503,6 +504,7 @@ const make = Effect.gen(function* () {
       readonly threadId: ThreadId;
       readonly title: string;
       readonly height: number;
+      readonly measure?: boolean | undefined;
     },
   ) {
     const source = yield* readSource(input);
@@ -527,7 +529,7 @@ const make = Effect.gen(function* () {
     return yield* fileSystem.writeFileString(filePath, html).pipe(
       Effect.mapError((cause) => new HtmlRenderStoreError({ cause })),
       Effect.uninterruptible,
-      Effect.andThen(measure(html)),
+      Effect.andThen(input.measure === false ? Effect.succeed(undefined) : measure(html)),
       Effect.andThen((heights) => {
         const reference: HtmlRenderReference = {
           ...baseReference,
