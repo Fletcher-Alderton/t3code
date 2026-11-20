@@ -25,9 +25,10 @@ describe("note styles", () => {
   });
 
   it("renders payloads as text, not HTML", () => {
-    expect(html('`t3:warning|<img src=x onerror="alert(1)">`')).toContain(
-      '<span class="text-warning"><img src=x onerror="alert(1)"></span>',
-    );
+    const markup = html('`t3:warning|<img src=x onerror="alert(1)">`');
+    expect(markup).toContain('<span class="text-warning">');
+    expect(markup).toContain("onerror=");
+    expect(markup).not.toContain("<img");
   });
 
   it.each(["accent,warning", "accent,accent", "color:red", "constructor", ""])(

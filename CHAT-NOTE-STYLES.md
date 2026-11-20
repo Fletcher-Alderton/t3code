@@ -6,8 +6,8 @@ Assistant replies can use the existing GitHub-style Markdown (headings, task lis
 
 Ask the assistant to write a Markdown note and use inline code spans of the form `` `t3:accent,strong|Decision` `` to style short phrases. The characters after the first `|` are plain text. A span can combine at most one style from each column:
 
-| Color | Size | Weight | Font |
-| --- | --- | --- | --- |
+| Color                        | Size             | Weight             | Font            |
+| ---------------------------- | ---------------- | ------------------ | --------------- |
 | `accent`, `muted`, `warning` | `small`, `large` | `medium`, `strong` | `mono`, `serif` |
 
 Unknown or conflicting styles stay literal code. Fenced code stays literal so you can show examples. Use ordinary Markdown for links and formatting inside a phrase. Other Markdown renderers will display the extension as inline code. This uses a fixed palette; it does not call a second model or accept arbitrary CSS.
