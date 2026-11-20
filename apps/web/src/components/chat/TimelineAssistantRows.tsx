@@ -132,6 +132,7 @@ export function SentMessageTimelineRow({
       >
         <ChatMarkdown
           text={row.text}
+          renderNoteStyles
           cwd={ctx.markdownCwd}
           threadRef={ctx.threadRef ?? undefined}
           lineBreaks={shouldPreserveAssistantLineBreaks(row.text)}
