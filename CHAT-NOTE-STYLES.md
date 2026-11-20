@@ -32,9 +32,9 @@ Ask the assistant to return the following Markdown verbatim, without wrapping it
 
 Ask the agent to build the UI and publish it directly in the conversation with `html_render`. The same surface supports diagrams, SVG charts, images, video with controls, and interactive layouts. There is no preview card to open and no separate chart syntax.
 
-Astro is the authoring and build tool, not a second browser engine. Use a static build, set `build.inlineStylesheets: "always"` in `astro.config.mjs`, and publish the resulting `.html` with `html_render({ path, title, height, measure: false })`. Use `html` instead of `path` if the agent does not have full file access. Bundle any scripts inline, use absolute media URLs (or embed assets), and prefer static HTML, CSS, and SVG over client-side hydration. Videos should use controls and `preload="none"`. Do not pass the Astro dev-server URL or raw `.astro` source.
+Astro is the authoring and build tool, not a second browser engine. Use a static build, set `build.inlineStylesheets: "always"` in `astro.config.mjs`, and publish the resulting `.html` with `html_render({ path: "/absolute/path/to/dist/index.html" })`. Use `html` instead of `path` if the agent does not have full file access. Bundle any scripts inline, use absolute media URLs (or embed assets), and prefer static HTML, CSS, and SVG over client-side hydration. Videos should use controls and `preload="none"`. Do not pass the Astro dev-server URL or raw `.astro` source.
 
-The chat renders the artifact in its existing sandboxed HTML surface and adjusts its height in place. With `measure: false`, publishing does not launch headless Chrome just to calculate heights; the supplied `height` is the initial estimate. The optional `html_preview` tool remains useful when the agent wants a screenshot before publishing.
+The chat renders the artifact in its existing sandboxed HTML surface and adjusts its height in place. Path-only calls use the filename as the title and skip headless Chrome sizing by default. Optional `title` and `height` override the display defaults. The optional `html_preview` tool remains useful when the agent wants a screenshot before publishing.
 
 ## Run the desktop fork
 

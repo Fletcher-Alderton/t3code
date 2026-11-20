@@ -77,23 +77,24 @@ export const HtmlPreviewTool = Tool.make("html_preview", {
 
 // This affects only the caller's thread, not its workspace, so read-only sandboxes and plan mode may use it.
 const HtmlRenderTool = Tool.make(HTML_RENDER_TOOL_NAME, {
-  description: `Publish agent-authored UI directly in the scrolling chat timeline: charts, diagrams, media, dashboards, and interfaces. Pass self-contained HTML or a built Astro .html file, not .astro source or a dev-server URL. Bundle styles and scripts inline; prefer static markup and SVG. Use measure: false with an estimated height to avoid starting a separate headless browser; the live chat frame still fits the content. Do not announce or restate the page. Frame fits height to ${HTML_RENDER_MAX_FIT_HEIGHT}px. On mobile, content past the given height scrolls. ${HTML_RENDER_LAYOUT_GUIDE} ${HTML_RENDER_THEME_GUIDE}`,
+  description: `Publish agent-authored UI directly in the scrolling chat timeline: charts, diagrams, media, dashboards, and interfaces. To show a built Astro page or other self-contained HTML file, pass just its absolute path. Do not pass .astro source or a dev-server URL. Bundle styles and scripts inline; prefer static markup and SVG. File renders fit in chat without starting a separate sizing browser by default. Do not announce or restate the page. Frame fits height to ${HTML_RENDER_MAX_FIT_HEIGHT}px. On mobile, content past the given height scrolls. ${HTML_RENDER_LAYOUT_GUIDE} ${HTML_RENDER_THEME_GUIDE}`,
   parameters: Schema.Struct({
     path: Schema.optional(HtmlPath),
     html: Schema.optional(Html),
-    title: Schema.String.check(
-      Schema.isMinLength(1),
-      Schema.isMaxLength(HTML_RENDER_MAX_TITLE_LENGTH),
+    title: Schema.optional(
+      Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(HTML_RENDER_MAX_TITLE_LENGTH)),
     ),
     measure: Schema.optional(
       Schema.Boolean.annotate({
         description:
-          "Default true. Set false to skip server-side sizing; the live chat frame measures itself.",
+          "Defaults to false for path and true for inline HTML. The live chat frame measures itself.",
       }),
     ),
-    height: Schema.Int.annotate({
-      description: `Frame height in CSS pixels, ${HTML_RENDER_MIN_HEIGHT} to ${HTML_RENDER_MAX_HEIGHT}. Estimate the height for direct publishing, or use contentHeight from html_preview when checking complex UI.`,
-    }),
+    height: Schema.optional(
+      Schema.Int.annotate({
+        description: `Initial frame height in CSS pixels, ${HTML_RENDER_MIN_HEIGHT} to ${HTML_RENDER_MAX_HEIGHT}. Defaults to 320.`,
+      }),
+    ),
   }),
   success: Schema.Struct({
     htmlRender: Schema.Struct({

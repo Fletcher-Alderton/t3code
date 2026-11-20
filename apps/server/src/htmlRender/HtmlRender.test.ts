@@ -401,6 +401,28 @@ describe("HtmlRender", () => {
       ),
   );
 
+  it.effect("publishes and recovers a path-only call without spawning a sizing browser", () =>
+    Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem;
+      const path = yield* Path.Path;
+      const render = yield* HtmlRender.HtmlRender;
+      const sessions = yield* McpProviderSessions.McpProviderSessions;
+      const threadId = ThreadId.make("thread-path-only");
+      const dir = yield* fs.makeTempDirectoryScoped();
+      const input = { path: path.join(dir, "index.html") };
+      yield* fs.writeFileString(input.path, "<!doctype html><main>Built Astro page</main>");
+      const reference = yield* render.publish({ threadId, ...input });
+      expect(reference.title).toBe("index.html");
+      expect(reference.height).toBe(320);
+      expect(reference.heights).toBeUndefined();
+      expect(yield* sessions.takeHtmlRender(threadId, input)).toEqual(reference);
+    }).pipe(
+      Effect.provide(
+        layerHtmlRender(undefined, Effect.die(new Error("unexpected sizing browser"))),
+      ),
+    ),
+  );
+
   it.effect("removes the page when publishing is interrupted", () =>
     Effect.gen(function* () {
       const threadId = ThreadId.make("thread-html-cancel");

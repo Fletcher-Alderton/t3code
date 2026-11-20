@@ -150,8 +150,8 @@ export class HtmlRender extends Context.Service<
     readonly publish: (
       input: HtmlRenderSource & {
         readonly threadId: ThreadId;
-        readonly title: string;
-        readonly height: number;
+        readonly title?: string | undefined;
+        readonly height?: number | undefined;
         readonly measure?: boolean | undefined;
       },
     ) => Effect.Effect<
@@ -502,8 +502,8 @@ const make = Effect.gen(function* () {
   const publish = Effect.fn("HtmlRender.publish")(function* (
     input: HtmlRenderSource & {
       readonly threadId: ThreadId;
-      readonly title: string;
-      readonly height: number;
+      readonly title?: string | undefined;
+      readonly height?: number | undefined;
       readonly measure?: boolean | undefined;
     },
   ) {
@@ -521,15 +521,18 @@ const make = Effect.gen(function* () {
     if (attachmentId === null || filePath === null) {
       return yield* new HtmlRenderStoreError({ cause: new Error("Invalid thread id.") });
     }
+    const defaultTitle = "path" in input ? path.basename(input.path) : "HTML";
     const baseReference: HtmlRenderReference = {
       attachmentId,
-      title: input.title.trim().slice(0, HTML_RENDER_MAX_TITLE_LENGTH) || "HTML",
-      height: clampHtmlRenderHeight(input.height),
+      title: (input.title?.trim() || defaultTitle).slice(0, HTML_RENDER_MAX_TITLE_LENGTH),
+      height: clampHtmlRenderHeight(input.height ?? 320),
     };
     return yield* fileSystem.writeFileString(filePath, html).pipe(
       Effect.mapError((cause) => new HtmlRenderStoreError({ cause })),
       Effect.uninterruptible,
-      Effect.andThen(input.measure === false ? Effect.succeed(undefined) : measure(html)),
+      Effect.andThen(
+        (input.measure ?? !("path" in input)) ? measure(html) : Effect.succeed(undefined),
+      ),
       Effect.andThen((heights) => {
         const reference: HtmlRenderReference = {
           ...baseReference,

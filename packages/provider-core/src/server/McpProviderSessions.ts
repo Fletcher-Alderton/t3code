@@ -18,8 +18,8 @@ const KEPT_HTML_END_LENGTH = 8_000;
 
 interface KeptHtmlRender {
   readonly path: string | undefined;
-  readonly title: string;
-  readonly height: number;
+  readonly title?: string | undefined;
+  readonly height?: number | undefined;
   readonly htmlLength: number;
   readonly htmlHash: string;
   readonly htmlEnd: string;
@@ -39,8 +39,8 @@ export class McpProviderSessions extends Context.Service<
       input: {
         readonly html: string;
         readonly path?: string | undefined;
-        readonly title: string;
-        readonly height: number;
+        readonly title?: string | undefined;
+        readonly height?: number | undefined;
       },
       reference: HtmlRenderReference,
     ) => Effect.Effect<void>;
@@ -66,7 +66,8 @@ const matchingPageIndex = (kept: ReadonlyArray<KeptHtmlRender>, input: PageInput
     typeof input.height === "string" && input.height.trim() !== ""
       ? Number(input.height)
       : input.height;
-  const sameFrame = (page: KeptHtmlRender) => page.title === input.title && page.height === height;
+  const sameFrame = (page: KeptHtmlRender) =>
+    page.title === (input.title ?? undefined) && page.height === (height ?? undefined);
   const path = input.path;
   // The handler refuses a call with both sources, so it published nothing to recover. Its decoder
   // reads null as an omitted source.
