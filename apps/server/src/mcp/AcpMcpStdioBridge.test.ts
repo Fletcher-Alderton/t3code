@@ -83,6 +83,10 @@ describe("AcpMcpStdioBridge", () => {
     expect(output).toHaveBeenCalledExactlyOnceWith(
       `${JSON.stringify({ ...result, content: [explanation, image] })}\n`,
     );
+    expect(
+      fetch.mock.calls.find(([, init]) => String(init?.body).includes('"tools/call"'))?.[1]
+        ?.headers,
+    ).toEqual(expect.objectContaining({ "t3-acp-cli": "1" }));
     expect(fetch).toHaveBeenLastCalledWith(
       "http://127.0.0.1:1/mcp",
       expect.objectContaining({ method: "DELETE" }),
@@ -117,6 +121,7 @@ describe("AcpMcpStdioBridge", () => {
       expect(JSON.parse(written[0]!)).toMatchObject({ id: 1 });
       expect(JSON.parse(written[1]!)).toMatchObject({ id: 2, result: { ok: true } });
       expect(requests[0]?.headers.get("authorization")).toBe("Bearer bridge-test");
+      expect(requests[0]?.headers.get("t3-acp-cli")).toBeNull();
       expect(requests[1]?.headers.get("mcp-session-id")).toBe("session-42");
       expect(requests[1]?.headers.get("mcp-protocol-version")).toBe("2025-06-18");
     }),

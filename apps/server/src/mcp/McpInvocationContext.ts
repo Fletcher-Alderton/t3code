@@ -62,6 +62,7 @@ export interface McpClientCaller {
  * the limits of the agent it calls for. It can only narrow (see
  * `clientModeCeiling`), so a client gains nothing by sending a broad one.
  */
+export const ACP_CLI_HEADER = "t3-acp-cli";
 export const MODE_LIMIT_HEADER = "t3-mode-limit";
 
 /**
@@ -147,6 +148,7 @@ export interface McpInvocationScope {
   readonly capabilities: ReadonlySet<McpCapability>;
   readonly issuedAt: number;
   readonly requestNamespace: string;
+  readonly acpCli?: boolean;
   readonly thread: McpThreadCaller | undefined;
   readonly client: McpClientCaller | undefined;
   /** False while the Linked environments beta is off here; `/mcp` reads it per request. */

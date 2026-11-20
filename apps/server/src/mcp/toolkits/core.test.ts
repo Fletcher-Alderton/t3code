@@ -343,8 +343,9 @@ it("bounds public command rejections and redacts internal dispatch causes", () =
 
 const fullAccessThreadId = ThreadId.make("mcp-core-full-access-thread");
 
-it.effect("returns an HTML render reference that Codex and Claude tool rows both carry", () =>
-  Effect.gen(function* () {
+it.effect("records inline HTML for ACP CLI calls without duplicating native tool rows", () => {
+  const recorded: OrchestrationV2ServerCommand[] = [];
+  return Effect.gen(function* () {
     const server = yield* McpServer.McpServer;
     const result = yield* server
       .callTool({
@@ -363,6 +364,32 @@ it.effect("returns an HTML render reference that Codex and Claude tool rows both
     expect(
       htmlRenderFromToolItem({ toolName: "mcp__t3-code__html_render", output: result.content }),
     ).toEqual(reference);
+    expect(recorded).toEqual([]);
+    const fallback = yield* server
+      .callTool({
+        name: "html_render",
+        arguments: { html: "<p>Revenue</p>", title: "Revenue", height: 240 },
+      })
+      .pipe(
+        Effect.provideService(McpInvocationContext.McpInvocationContext, {
+          ...scope,
+          acpCli: true,
+        }),
+        Effect.provideService(McpSchema.McpServerClient, client),
+      );
+    const fallbackReference = htmlRenderFromToolItem({
+      toolName: "html_render",
+      output: fallback.structuredContent,
+    });
+    expect(fallbackReference).toMatchObject({ title: "Revenue", height: 240 });
+    expect(recorded).toEqual([
+      {
+        type: "html-render.record",
+        commandId: `html-render:${fallbackReference?.attachmentId}`,
+        threadId,
+        reference: fallbackReference,
+      },
+    ]);
     // Only a full-access thread may have the server read a file for it.
     const byPath = (name: string, caller: McpInvocationContext.McpInvocationScope) =>
       server
@@ -399,6 +426,11 @@ it.effect("returns an HTML render reference that Codex and Claude tool rows both
         Layer.provide(FetchHttpClient.layer),
         Layer.provide(
           Layer.mock(ThreadManagement.ThreadManagementService)({
+            dispatch: (command) =>
+              Effect.sync(() => {
+                recorded.push(command);
+                return { sequence: 1, storedEvents: [] };
+              }),
             getThreadShell: (id) =>
               Effect.succeed({
                 id,
@@ -413,8 +445,8 @@ it.effect("returns an HTML render reference that Codex and Claude tool rows both
         ),
       ),
     ),
-  ),
-);
+  );
+});
 
 it.effect("records only failed calls of tools that hand off no work", () => {
   // Recording runs detached from the tool response, so the first event is awaited.

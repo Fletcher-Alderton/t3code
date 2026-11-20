@@ -700,6 +700,7 @@ function commandThreadId(command: OrchestrationV2ServerCommand): ThreadId {
     case "delegated_task.completion-delivery.dispose":
     case "thread.created.record":
       return command.parentThreadId;
+    case "html-render.record":
     case "secret_request.record":
     case "link_request.record":
       return command.threadId;
@@ -15845,6 +15846,48 @@ const makeOrchestrator = Effect.fn("orchestrationV2.Orchestrator.layer")(functio
       case "thread.created.record":
         yield* dispatchCreatedThreadRecord(command, events);
         break;
+      case "html-render.record": {
+        const thread = yield* projectionStore
+          .getThread(command.threadId)
+          .pipe(mapDispatchError(command));
+        if (thread.deletedAt !== null || thread.archivedAt !== null) {
+          return yield* new OrchestratorDispatchError({
+            commandId: command.commandId,
+            commandType: command.type,
+            cause: "Cannot render in an archived or deleted thread.",
+          });
+        }
+        const now = yield* DateTime.now;
+        yield* emit(
+          events,
+          command,
+        )({
+          type: "turn-item.updated",
+          threadId: command.threadId,
+          occurredAt: now,
+          payload: {
+            id: TurnItemId.make(`turn-item:html-render:${command.reference.attachmentId}`),
+            threadId: command.threadId,
+            runId: null,
+            nodeId: null,
+            providerThreadId: null,
+            providerTurnId: null,
+            nativeItemRef: null,
+            parentItemId: null,
+            ordinal: yield* nextTurnItemOrdinal({ thread }),
+            type: "dynamic_tool",
+            status: "completed",
+            toolName: "html_render",
+            title: command.reference.title,
+            input: {},
+            output: { htmlRender: command.reference },
+            startedAt: now,
+            completedAt: now,
+            updatedAt: now,
+          },
+        });
+        break;
+      }
       case "secret_request.record":
         yield* dispatchSecretRequestRecord(command, events);
         break;

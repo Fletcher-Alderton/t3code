@@ -337,7 +337,15 @@ const makeMcpAuthMiddleware = Effect.gen(function* () {
       limited.thread === undefined
         ? undefined
         : yield* Cache.get(forgeOfThread, limited.thread.threadId);
-    return { ...limited, linkedEnvironments, origin, ...(forge === undefined ? {} : { forge }) };
+    return {
+      ...limited,
+      linkedEnvironments,
+      origin,
+      acpCli:
+        limited.thread !== undefined &&
+        request.headers[McpInvocationContext.ACP_CLI_HEADER] === "1",
+      ...(forge === undefined ? {} : { forge }),
+    };
   });
   // Untraced: a span here would wrap the tool call; the HTTP server span already covers it.
   return Effect.fnUntraced(function* (httpEffect) {

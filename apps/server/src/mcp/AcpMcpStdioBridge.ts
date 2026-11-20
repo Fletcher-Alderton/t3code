@@ -68,6 +68,7 @@ export interface McpToolSessionOptions {
   readonly endpoint: string;
   readonly authorization: string;
   readonly clientName: string;
+  readonly acpCli?: boolean;
   readonly fetchImplementation?: (url: string, init?: RequestInit) => Promise<Response>;
 }
 
@@ -94,6 +95,7 @@ export const mcpToolSession = (
   const headers = () => ({
     accept: "application/json, text/event-stream",
     authorization: options.authorization,
+    ...(options.acpCli === true ? { "t3-acp-cli": "1" } : {}),
     ...(sessionId === null ? {} : { "mcp-session-id": sessionId }),
     ...(protocolVersion === null ? {} : { "mcp-protocol-version": protocolVersion }),
   });
@@ -186,7 +188,7 @@ function callAcpMcpTool(options: {
   readonly tool: string;
   readonly arguments: Readonly<Record<string, unknown>>;
 }): Effect.Effect<unknown, AcpMcpBridgeError> {
-  return mcpToolSession({ ...options, clientName: "t3-code-acp-cli" }).pipe(
+  return mcpToolSession({ ...options, clientName: "t3-code-acp-cli", acpCli: true }).pipe(
     Effect.flatMap((session) => session.call(options.tool, options.arguments)),
     Effect.scoped,
   );

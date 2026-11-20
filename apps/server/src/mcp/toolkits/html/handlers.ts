@@ -1,6 +1,7 @@
-import { OrchestratorMcpFailure } from "@t3tools/contracts";
+import { CommandId, OrchestratorMcpFailure } from "@t3tools/contracts";
 import * as Effect from "effect/Effect";
 
+import * as ThreadManagementService from "../../../orchestration-v2/ThreadManagementService.ts";
 import * as HtmlRender from "../../../htmlRender/HtmlRender.ts";
 import * as McpInvocationContext from "../../McpInvocationContext.ts";
 import * as McpToolAccess from "../../McpToolAccess.ts";
@@ -82,6 +83,17 @@ const handlers = {
           measure: input.measure,
         })
         .pipe(Effect.mapError(toFailure));
+      if (scope.acpCli === true) {
+        const threads = yield* ThreadManagementService.ThreadManagementService;
+        yield* threads
+          .dispatch({
+            type: "html-render.record",
+            commandId: CommandId.make(`html-render:${reference.attachmentId}`),
+            threadId: thread.threadId,
+            reference,
+          })
+          .pipe(Effect.mapError(toFailure));
+      }
       return {
         htmlRender: reference,
         message:
