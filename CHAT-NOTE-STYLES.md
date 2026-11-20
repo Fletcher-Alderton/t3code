@@ -4,7 +4,7 @@ Assistant replies can use the existing GitHub-style Markdown (headings, task lis
 
 ## Inline styles
 
-Ask the assistant to write a Markdown note and use inline code spans of the form `` `t3:accent,strong|Decision` `` to style short phrases. The characters after the first `|` are plain text. A span can combine at most one style from each column:
+Ask the assistant to write a Markdown note and use inline code spans of the form `` `t3:accent,strong::Decision` `` to style short phrases. The characters after `::` are plain text. Use `::` in Markdown tables: a bare `|` splits table cells even inside backticks. The legacy `|` separator still works outside tables or when escaped as `\|` inside a table. A span can combine at most one style from each column:
 
 | Color                        | Size             | Weight             | Font            | Background          | Decoration            |
 | ---------------------------- | ---------------- | ------------------ | --------------- | ------------------- | --------------------- |

@@ -21,10 +21,10 @@ function styledSpan(code: Element): Element | undefined {
   if (code.children.length !== 1) return;
   const text = code.children[0];
   if (text?.type !== "text" || !text.value.startsWith("t3:")) return;
-  const separator = text.value.indexOf("|");
-  if (separator === -1) return;
-  const styles = text.value.slice(3, separator).split(",");
-  const value = text.value.slice(separator + 1);
+  const separator = /::|\|/.exec(text.value);
+  if (!separator) return;
+  const styles = text.value.slice(3, separator.index).split(",");
+  const value = text.value.slice(separator.index + separator[0].length);
   if (!value.trim() || styles.length > 6 || new Set(styles).size !== styles.length) return;
   const classes: string[] = [];
   const groups = new Set<string>();

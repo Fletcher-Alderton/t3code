@@ -30,6 +30,12 @@ describe("note styles", () => {
     );
   });
 
+  it("renders both table-safe styles and legacy styles with an escaped pipe", () => {
+    const markup = html("| Samples |\n| --- |\n| `t3:accent::accent` · `t3:strong\\|strong` |");
+    expect(markup).toContain('<span class="text-info">accent</span>');
+    expect(markup).toContain('<span class="font-bold">strong</span>');
+  });
+
   it("renders payloads as text, not HTML", () => {
     const markup = html('`t3:warning|<img src=x onerror="alert(1)">`');
     expect(markup).toContain('<span class="text-warning">');
