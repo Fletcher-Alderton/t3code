@@ -233,6 +233,7 @@ import { canUseMarkdownFileShellActions } from "./chat/MarkdownFileLink.logic";
 import { rehypeChipPunctuation } from "./chat/markdownChipPunctuation";
 import { handleMarkdownFragmentClick, rehypeHeadingIds } from "./chat/markdownFragments";
 import { rehypeTextDirection } from "./chat/markdownTextDirection";
+import { rehypeMarkdownNoteStyles } from "./chat/markdownNoteStyles";
 import { hastHasText, hastPlainTextDeep, plainHastText } from "./chat/markdownHast.logic";
 import {
   extractCodeBlock,
@@ -248,6 +249,7 @@ const isAssetNotFoundError = Schema.is(AssetWorkspaceAssetNotFoundError);
 
 interface ChatMarkdownProps {
   renderInsights?: boolean;
+  renderNoteStyles?: boolean;
   /** Compact markdown transforms remove blocks before rendering inside a label. */
   inline?: boolean;
   text: string;
@@ -436,6 +438,15 @@ const CHAT_MARKDOWN_LITERAL_HTML_REHYPE_PLUGINS = [
   rehypeTextDirection,
   rehypeChipPunctuation,
 ] satisfies NonNullable<ReactMarkdownOptions["rehypePlugins"]>;
+
+const NOTE_RENDER_REHYPE_PLUGINS = [
+  ...CHAT_MARKDOWN_RENDER_REHYPE_PLUGINS,
+  rehypeMarkdownNoteStyles,
+];
+const NOTE_LITERAL_REHYPE_PLUGINS = [
+  ...CHAT_MARKDOWN_LITERAL_HTML_REHYPE_PLUGINS,
+  rehypeMarkdownNoteStyles,
+];
 
 function markdownUrlTransform(href: string) {
   if (parseAssistantCitationHref(href)) return href;
@@ -1932,6 +1943,7 @@ function ChatMarkdown({
   parseRawHtml = true,
   extraRemarkPlugins = EMPTY_REMARK_PLUGINS,
   renderInsights = false,
+  renderNoteStyles = false,
   ...props
 }: ChatMarkdownProps) {
   const { componentState, handleCopy, markdownRef, localMediaPreview, closeLocalMediaPreview } =
@@ -1976,6 +1988,13 @@ function ChatMarkdown({
         extraRemarkPlugins,
       );
   const blocks = streamingBlocks ?? [text];
+  const rehypePlugins = renderNoteStyles
+    ? parseRawHtml
+      ? NOTE_RENDER_REHYPE_PLUGINS
+      : NOTE_LITERAL_REHYPE_PLUGINS
+    : parseRawHtml
+      ? CHAT_MARKDOWN_RENDER_REHYPE_PLUGINS
+      : CHAT_MARKDOWN_LITERAL_HTML_REHYPE_PLUGINS;
 
   return (
     <Root
@@ -1996,11 +2015,7 @@ function ChatMarkdown({
             key={index}
             text={source}
             remarkPlugins={remarkPlugins}
-            rehypePlugins={
-              parseRawHtml
-                ? CHAT_MARKDOWN_RENDER_REHYPE_PLUGINS
-                : CHAT_MARKDOWN_LITERAL_HTML_REHYPE_PLUGINS
-            }
+            rehypePlugins={rehypePlugins}
             shared={!uncachedPlugins}
             // Every block before the last is finished, so its parse can be reused.
             cache={!props.isStreaming || index < blocks.length - 1}

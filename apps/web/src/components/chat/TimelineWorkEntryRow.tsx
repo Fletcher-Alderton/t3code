@@ -203,6 +203,7 @@ export function ReasoningTraceContent({ entries }: { entries: ReadonlyArray<Time
           key={entry.id}
           className="text-foreground"
           text={entry.detail ?? ""}
+          renderNoteStyles
           cwd={ctx.markdownCwd}
           threadRef={ctx.threadRef ?? undefined}
           skills={ctx.skills}
