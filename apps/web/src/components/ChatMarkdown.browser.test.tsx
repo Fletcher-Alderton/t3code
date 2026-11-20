@@ -399,6 +399,45 @@ describe("ChatMarkdown external link labels", () => {
   });
 });
 
+describe("ChatMarkdown Astro previews", () => {
+  const fence = (url: string) => ["```astro-preview", url, "```"].join("\n");
+
+  it("loads only the selected frame and unloads it on demand", async () => {
+    setup();
+    const text = [fence("https://one.invalid/"), fence("https://two.invalid/")].join("\n\n");
+    await using screen = await renderText(text, { renderNoteStyles: true });
+    const buttons = page.getByRole("button", { name: "Load static preview" });
+    await expect.element(buttons.nth(1)).toBeVisible();
+    expect(screen.container.querySelector("iframe")).toBeNull();
+    await buttons.nth(0).click();
+    expect(screen.container.querySelector("iframe")?.getAttribute("sandbox")).toBe("");
+    expect(screen.container.querySelector("iframe")?.getAttribute("src")).toBe(
+      "https://one.invalid/",
+    );
+    await buttons.nth(0).click();
+    expect(screen.container.querySelectorAll("iframe")).toHaveLength(1);
+    expect(screen.container.querySelector("iframe")?.getAttribute("src")).toBe(
+      "https://two.invalid/",
+    );
+    await page.getByRole("button", { name: "Unload preview" }).click();
+    expect(screen.container.querySelector("iframe")).toBeNull();
+  });
+
+  it("does not convert streaming, invalid, or ordinary Markdown fences into previews", async () => {
+    setup();
+    const safe = fence("https://example.test/");
+    await using ordinary = await renderText(safe);
+    await using streaming = await renderText(safe, { renderNoteStyles: true, isStreaming: true });
+    await using invalid = await renderText(fence("javascript:alert(1)"), {
+      renderNoteStyles: true,
+    });
+    for (const view of [ordinary, streaming, invalid]) {
+      expect(view.container.querySelector("button[aria-expanded]")).toBeNull();
+      expect(view.container.querySelector("iframe")).toBeNull();
+    }
+  });
+});
+
 describe("ChatMarkdown streaming", () => {
   it("runs only a complete single-line shell block after a click", async () => {
     setup();

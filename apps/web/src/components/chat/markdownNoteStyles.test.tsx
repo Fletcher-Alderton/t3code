@@ -24,6 +24,12 @@ describe("note styles", () => {
     );
   });
 
+  it("combines background and decoration with existing presets", () => {
+    expect(html("`t3:highlight,underline,strong|Heads up` ")).toContain(
+      '<span class="bg-warning-surface underline font-bold">Heads up</span>',
+    );
+  });
+
   it("renders payloads as text, not HTML", () => {
     const markup = html('`t3:warning|<img src=x onerror="alert(1)">`');
     expect(markup).toContain('<span class="text-warning">');

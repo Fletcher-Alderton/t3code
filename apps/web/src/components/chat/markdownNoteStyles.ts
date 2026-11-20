@@ -11,6 +11,10 @@ const NOTE_STYLE_CLASSES = new Map([
   ["strong", "font-bold"],
   ["mono", "font-mono"],
   ["serif", "font-serif"],
+  ["highlight", "bg-warning-surface"],
+  ["chip", "bg-muted"],
+  ["underline", "underline"],
+  ["strike", "line-through"],
 ]);
 
 function styledSpan(code: Element): Element | undefined {
@@ -21,7 +25,7 @@ function styledSpan(code: Element): Element | undefined {
   if (separator === -1) return;
   const styles = text.value.slice(3, separator).split(",");
   const value = text.value.slice(separator + 1);
-  if (!value.trim() || styles.length > 4 || new Set(styles).size !== styles.length) return;
+  if (!value.trim() || styles.length > 6 || new Set(styles).size !== styles.length) return;
   const classes: string[] = [];
   const groups = new Set<string>();
   for (const style of styles) {
@@ -33,7 +37,11 @@ function styledSpan(code: Element): Element | undefined {
         : "weight"
       : style === "small" || style === "large"
         ? "size"
-        : "color";
+        : className.startsWith("bg-")
+          ? "background"
+          : style === "underline" || style === "strike"
+            ? "decoration"
+            : "color";
     if (groups.has(group)) return;
     groups.add(group);
     classes.push(className);
