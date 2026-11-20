@@ -216,7 +216,7 @@ import { MarkdownCodeBlock, SuspenseShikiCodeBlock } from "./chat/MarkdownCodeBl
 import { createMarkdownRenderer } from "./chat/markdownRenderer";
 import { splitMarkdownBlocks } from "./chat/markdownStreamBlocks";
 import { MarkdownMermaidCodeBlock } from "./chat/MarkdownMermaidCodeBlock";
-import { AstroPreviewCard, astroPreviewUrl } from "./chat/AstroPreviewCard";
+import { MarkdownBarChart } from "./chat/MarkdownBarChart";
 import { MarkdownTable } from "./chat/MarkdownTable";
 import { MarkdownDetails } from "./chat/MarkdownDetails";
 import {
@@ -1795,9 +1795,12 @@ const CHAT_MARKDOWN_COMPONENTS = {
     }
 
     const language = extractFenceLanguage(codeBlock.className);
-    if (renderNoteStyles && !inline && language === "astro-preview") {
-      const url = !isStreaming && astroPreviewUrl(codeBlock.code);
-      return url ? <AstroPreviewCard key={url} url={url} /> : <pre {...props}>{children}</pre>;
+    if (renderNoteStyles && !inline && language === "t3-chart") {
+      return isStreaming && !isClosedCodeFence(node, text, codeBlock.code) ? (
+        <pre {...props}>{children}</pre>
+      ) : (
+        <MarkdownBarChart source={codeBlock.code} />
+      );
     }
     if (
       mathEnabled &&

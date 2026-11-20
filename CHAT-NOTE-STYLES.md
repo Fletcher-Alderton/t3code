@@ -28,19 +28,28 @@ Ask the assistant to return the following Markdown verbatim, without wrapping it
 `t3:muted,small|Last updated today`
 ```
 
-## Astro site previews
+## Inline charts, diagrams, and media
 
-Ask the assistant to return this fence as part of a reply:
+Use these directly in an assistant reply; they appear in the same scrolling timeline as the surrounding text:
 
 ````markdown
-```astro-preview
-https://your-astro-site.example/
+```t3-chart
+Build time (seconds)
+Before | 20
+After | 8
 ```
+
+```mermaid
+flowchart LR
+  Draft --> Review --> Publish
+```
+
+![Screenshot](./assets/screenshot.png)
+
+![Demo recording](./assets/demo.mp4)
 ````
 
-Click **Load static preview** in chat. Use a deployed HTTPS URL or serve a built Astro site locally (for example, run `npm run build` and `npm run preview` in your Astro project, then use `http://localhost:4321/`). This previews rendered HTML and CSS, not raw `.astro` source. The iframe disables scripts, so JavaScript islands and development-only behavior may not work; **Open site** opens the normal interactive page. Sites that disallow framing must also be opened separately. Only load URLs you trust: the embedded page can still request its own images and styles.
-
-The preview reuses the existing Chromium engine. It makes no page request until clicked, allows one active preview per app window, and unloads when you scroll it fully out of view, hide the tab, or open another preview.
+Charts use a title followed by up to 24 `label | value` rows with unique labels and finite nonnegative numbers. Labels and exact values remain readable alongside the bars. Charts are HTML and CSS rendered by the chat itself: no iframe, fetch, or extra chart engine. Mermaid diagrams, expandable images, and inline video controls use T3 Code's existing renderers. For images and videos, use readable workspace files or direct media URLs, not links to player pages.
 
 ## Run the desktop fork
 
