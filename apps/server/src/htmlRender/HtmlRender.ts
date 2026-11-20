@@ -530,9 +530,7 @@ const make = Effect.gen(function* () {
     return yield* fileSystem.writeFileString(filePath, html).pipe(
       Effect.mapError((cause) => new HtmlRenderStoreError({ cause })),
       Effect.uninterruptible,
-      Effect.andThen(
-        (input.measure ?? !("path" in input)) ? measure(html) : Effect.succeed(undefined),
-      ),
+      Effect.andThen((input.measure ?? !("path" in input)) ? measure(html) : Effect.undefined),
       Effect.andThen((heights) => {
         const reference: HtmlRenderReference = {
           ...baseReference,
